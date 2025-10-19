@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alias copiado</title>
+  <meta name="description" content="Copia automática de alias para transferencia." />
+  <style>
+    :root { --radius: 16px; }
+    * { box-sizing: border-box; }
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      background:#0f172a; color:#0b1220;
+    }
+    .card{
+      width:min(92vw,520px); background:#fff; border-radius:var(--radius);
+      box-shadow: 0 8px 40px rgba(0,0,0,.25); padding:28px; text-align:center;
+    }
+    h1{ font-size:1.25rem; margin:0 0 8px; }
+    .alias{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size:1.15rem; padding:10px 12px; background:#f1f5f9; border-radius:10px; display:inline-block;
+      user-select:all;
+    }
+    .ok{ color:#075e26; font-weight:600; margin-top:8px; }
+    .warn{ color:#a15d00; font-weight:600; margin-top:8px; }
+    button{
+      margin-top:16px; padding:12px 16px; width:100%;
+      border:0; border-radius:12px; font-weight:700; font-size:1rem; cursor:pointer;
+      background:#0ea5e9; color:white;
+    }
+    .tips{ margin-top:14px; font-size:.9rem; color:#334155 }
+    .footer{ margin-top:18px; font-size:.8rem; color:#64748b }
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-live="polite">
+    <h1>Alias listo para pegar</h1>
+    <div id="alias" class="alias" aria-label="Alias para transferir">TU_ALIAS_AQUI</div>
+    <div id="status" class="ok" style="display:none">Alias copiado al portapapeles ✅</div>
+    <div id="warn" class="warn" style="display:none">No se pudo copiar automáticamente.</div>
+    <button id="copyBtn" style="display:none" aria-label="Copiar alias al portapapeles">Copiar</button>
+    <p class="tips">Abrí tu app bancaria o Mercado Pago y pegá el alias en “Enviar transferencia”.</p>
+    <p class="footer">Funciona en HTTPS (GitHub Pages). Si el navegador pide interacción, usá el botón “Copiar”.</p>
+  </main>
+
+  <script>
+    const alias = 'TU_ALIAS_AQUI'; // ← reemplazar por tu alias exacto (ej: mi.alias.mp)
+    const elAlias = document.getElementById('alias');
+    const elStatus = document.getElementById('status');
+    const elWarn = document.getElementById('warn');
+    const elBtn = document.getElementById('copyBtn');
+
+    elAlias.textContent = alias;
+
+    async function tryCopy() {
+      try {
+        // Permisos “clipboard-write” suelen funcionar con HTTPS y foco activo
+        await navigator.clipboard.writeText(alias);
+        elStatus.style.display = 'block';
+      } catch (err) {
+        // Fallback: mostrar botón para gesto del usuario
+        elWarn.style.display = 'block';
+        elBtn.style.display = 'inline-block';
+      }
+    }
+
+    // Intento de autocopia cuando la página toma foco (mejora tasas en iOS/Android)
+    window.addEventListener('load', tryCopy);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && elStatus.style.display === 'none') {
+        tryCopy();
+      }
+    });
+
+    elBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(alias);
+        elStatus.style.display = 'block';
+        elWarn.style.display = 'none';
+        elBtn.style.display = 'none';
+      } catch (e) {
+        // Súper-rescate: seleccionar texto para copiar manualmente
+        const range = document.createRange();
+        range.selectNodeContents(elAlias);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+      }
+    });
+  </script>
+</body>
+</html>
